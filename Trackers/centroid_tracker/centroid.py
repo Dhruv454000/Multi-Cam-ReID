@@ -87,8 +87,7 @@ class Centroid_tracker():
                 objectId.append(track.id)
                 objectCentroid.append(track.centroid) 
             D = dist.cdist(np.array(objectCentroid), inputCentroids)
-            unusedRows,unusedCols,matched= self.find_match(D,objectCentroid,inputCentroids)
-            print(matched)
+            unusedRows,unusedCols,matched= self.find_match(objectCentroid,inputCentroids)
             for i in matched:
                 self.tracks[i[0]].bbox = detections[i[1]]
                 self.tracks[i[0]].centroid = inputCentroids[i[1]]
@@ -106,12 +105,11 @@ class Centroid_tracker():
         result=[a for a in self.tracks if a.hits>=self.min_hits]
         return result
         
-    def find_match(self,cost_mat,objectCentroid,inputCentroids):
+    def find_match(self,objectCentroid,inputCentroids):
         """
-        Returns cost matrix and list of matched and unmatched tracks. 
+        Returns list of matched objects , unmatched tracks and unmatched detections.  
         
         Args
-        cost_mat : matrix with euclidean distance between objects.
         objectCentroid : list of centroids of existing objects.
         inputCentroids : list of centroids of current detections.
 

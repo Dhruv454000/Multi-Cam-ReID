@@ -38,7 +38,7 @@ class Yolo():
                 dect_list.append(dect[2])
         return dect_list
 
-    def draw_box(self,detections, image):
+    def draw_box(self, detections, image):
         """
         Draws bbox around the detection and display "id" of each object
 
@@ -97,4 +97,3 @@ class Yolo():
         _height     = self.height
         _width      = self.width
         return x/_width, y/_height, w/_width, h/_height
-        

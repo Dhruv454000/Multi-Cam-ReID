@@ -86,7 +86,14 @@ class Centroid_tracker():
             for track in self.tracks:
                 objectId.append(track.id)
                 objectCentroid.append(track.centroid) 
-            D,unusedRows,unusedCols = self.check_track(objectCentroid,inputCentroids,detections)
+            D = dist.cdist(np.array(objectCentroid), inputCentroids)
+            unusedRows,unusedCols,matched= self.find_match(D,objectCentroid,inputCentroids)
+            print(matched)
+            for i in matched:
+                self.tracks[i[0]].bbox = detections[i[1]]
+                self.tracks[i[0]].centroid = inputCentroids[i[1]]
+                self.tracks[i[0]].miss = 0
+                self.tracks[i[0]].hits += 1
             if D.shape[0] >= D.shape[1]:
             # loop over the unused row indexes
                 for row in unusedRows: 
@@ -99,36 +106,34 @@ class Centroid_tracker():
         result=[a for a in self.tracks if a.hits>=self.min_hits]
         return result
         
-    def check_track(self,objectCentroid,inputCentroids,detections):
+    def find_match(self,cost_mat,objectCentroid,inputCentroids):
         """
         Returns cost matrix and list of matched and unmatched tracks. 
         
         Args
+        cost_mat : matrix with euclidean distance between objects.
         objectCentroid : list of centroids of existing objects.
         inputCentroids : list of centroids of current detections.
-        detections : list of detections in current frame
+
         Returns
-        D : cost matrix
         unusedrows : index of unmatched tracks
-        unusedcols : index of newly detected tracks 
+        unusedcols : index of newly detected tracks
+        matched : list of index of matching objects 
         """
         D = dist.cdist(np.array(objectCentroid), inputCentroids)
         rows = D.min(axis=1).argsort()
         cols = D.argmin(axis=1)[rows]
         usedRows = set()
         usedCols = set()
+        matched =[]
         # loop over the combination of the (row, column) index tuples
         for (row, col) in zip(rows, cols):
             # if we have already examined either the row or column value before, ignore it
             if row in usedRows or col in usedCols:
                 continue
-            self.tracks[row].bbox = detections[col]
-            self.tracks[row].centroid = inputCentroids[col]
-            self.tracks[row].miss = 0
-            self.tracks[row].hits += 1
-            # indicate that we have examined each of the row and column indexes, respectively
             usedRows.add(row)
             usedCols.add(col)
+            matched.append((row,col))
         unusedRows = set(range(0, D.shape[0])).difference(usedRows)
         unusedCols = set(range(0, D.shape[1])).difference(usedCols)
-        return D,unusedRows,unusedCols
+        return unusedRows,unusedCols,matched

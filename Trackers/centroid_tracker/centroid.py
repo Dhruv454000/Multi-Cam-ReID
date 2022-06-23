@@ -104,7 +104,7 @@ class Centroid_tracker():
         self.delete_track()
         result=[a for a in self.tracks if a.hits>=self.min_hits]
         return result
-        
+
     def find_match(self,objectCentroid,inputCentroids):
         """
         Returns list of matched objects , unmatched tracks and unmatched detections.  
@@ -113,6 +113,7 @@ class Centroid_tracker():
         objectCentroid : list of centroids of existing objects.
         inputCentroids : list of centroids of current detections.
 
+        Returns
         unusedcols : index of newly detected tracks
         matched : list of index of matching objects 
         """
